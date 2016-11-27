@@ -20,4 +20,8 @@
     <string name="title_activity_maps">Map</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="title_activity_login">Sign in</string>
+    <string name="title_activity_trip_info">TripInfoActivity</string>
+    <string name="title_activity_main_tab">Trackit</string>
+    <string name="prompt_odometer">Odometer</string>
+    <string name="prompt_vin_number">Vin Number</string>
 </resources>
