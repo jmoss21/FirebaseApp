@@ -1,8 +1,10 @@
 package TrackitDataObjects;
 
 /**
- * Created by asohm on 11/21/2016.
+ *The Driver Model is designed to hold all the relevant information
+ * for a driver within the AVTA database.
  */
+
 public class Driver
 {
     private  String username, driverId, email;

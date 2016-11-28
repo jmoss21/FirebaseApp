@@ -1,9 +1,9 @@
 package TrackitDataObjects;
 
 /**
- * Created by asohm on 11/27/2016.
- */
-
+ * The Point Class is designed to hold all the latitude and longitude values
+ * of the driver's route
+ * */
 public class Point
 {
     private double latitude;
@@ -11,6 +11,9 @@ public class Point
     private double longitude;
 
 
+    /**
+     * Getters and setters
+     */
     public Point()
     {
 

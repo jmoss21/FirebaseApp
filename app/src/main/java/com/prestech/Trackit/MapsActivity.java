@@ -30,7 +30,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-
+/**
+ *The MapActivity  is designed to display to the user the trip that is currently being
+ * recorded or a previously recorded trip.  It will display a Google Map with the users current
+ * location in the center, the total number of minutes, and the total distance of the trip.
+ */
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
         LocationListener {

@@ -16,6 +16,15 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+/**
+ *The LoginActivity is designed to authenticate the user of application to the company's backend database.
+ * It provides a mechanism for the driver to input credentials and returns a boolean representing the result
+ * of the authentication attempt. The Login class will receive the username and password of the Driver and pass
+ * credentials along to the AvtaDataModel package by instantiating a Driver Object.  The Driver Object will create
+ * a DatabaseDriver class that connects to the backend database and authenticates the user through the method
+ * validateCredentials.  The Login interface will transfer the user to the Home Screen once valid credentials
+ * have been confirmed.
+ */
 public class LoginActivity extends Activity implements View.OnClickListener{
 
     //reference to activity's view objects

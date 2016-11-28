@@ -1,7 +1,8 @@
 package TrackitDataObjects;
 
 /**
- * Created by asohm on 11/14/2016.
+ * The Car Model is designed to contain all
+ * the information for an individual car.
  */
 
 public class Car {

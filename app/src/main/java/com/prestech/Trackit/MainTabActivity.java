@@ -38,6 +38,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 
+/**
+ * The MainTabActivity is the central hub for the functions of the application.
+ * After authentication the Main Screen provides the user with several tabs that
+ * allow the user to alter their account, view previous trips, start new trip,
+ * and logout.  All these features are tabs within the Main Screen. The Main
+ * Screen will handle the transitions of the user from each of the tabs.
+ */
 public class MainTabActivity extends AppCompatActivity
 {
 
@@ -54,7 +61,6 @@ public class MainTabActivity extends AppCompatActivity
 
     private static FirebaseUser firebaseUser;
     private DatabaseReference mDatabase;
-    private String driverId;
 
     /**
      * The {@link ViewPager} that will host the section contents.
@@ -82,22 +88,6 @@ public class MainTabActivity extends AppCompatActivity
             startActivity(new Intent(MainTabActivity.this, LoginActivity.class));
 
         }//if ends
-        else {
-
-            driverId = firebaseUser.getUid();
-
-            //Initializes the database (Firebase)
-            mDatabase = FirebaseDatabase.getInstance().getReference("trips");
-
-           // mDatabase.setValue(true);
-
-            mDatabase.addValueEventListener(databaseValueEventListener);
-
-            // mDatabase.addChildEventListener(childEventListener);
-
-            querryFirebase();
-
-        }//else ends
 
 
 
@@ -122,76 +112,6 @@ public class MainTabActivity extends AppCompatActivity
     }//onCreate() Ens
 
 
-    /**
-     *
-     */
-     private void querryFirebase()
-     {
-         Query query = mDatabase;
-         query.addValueEventListener(databaseValueEventListener);
-     }//querryFirebase ends
-
-
-    /**
-     * ValueEventListener listens for changes in database. It implements two
-     * methods
-     */
-    ValueEventListener databaseValueEventListener = new ValueEventListener() {
-        @Override
-        public void onDataChange(DataSnapshot dataSnapshot) {
-
-
-            Iterable<DataSnapshot> iterableDataSnapshots = dataSnapshot.getChildren();
-            Iterator<DataSnapshot> dataSnapshotIterator = iterableDataSnapshots.iterator();
-
-            Log.i("c DATABASE_TRIGERRING",dataSnapshotIterator.next().toString());
-
-            int count = 0;
-            while (dataSnapshotIterator.hasNext())
-            {
-                count++;
-
-                Log.i("c "+count+" DATABASE_TRIGERRING",dataSnapshotIterator.next().toString());
-
-            }//while ends
-
-        }//onDataChange() //Ends
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-
-        }//onCancelled() Ends
-    };
-
-    /*ChildEventListener childEventListener = new ChildEventListener() {
-        @Override
-        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-
-            Log.i("2: DATABASE_TRIGER",dataSnapshot.toString()+ "   "+ s);
-
-        }//onChildAdded Ends
-
-        @Override
-        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-        }
-
-        @Override
-        public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-        }
-
-        @Override
-        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-        }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-
-        }
-    };
-*/
     /**
      *
      * @param auth
@@ -456,13 +376,15 @@ public class MainTabActivity extends AppCompatActivity
 
 /*==================================================================================================
  ***************************************************************************************************
- *==================================================================================================
- *
+ *=====================================INNER CLASS==================================================
+ *MyRecyclerAdapter is used to create the Recycle view object needed by the "PAST TRIPS" Tabs to display
+ * a the list of past trips
  */
 class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.MyViewHolder>
  {
 
 
+     //this will hold the list of trips to be displayed
      private ArrayList<String> mDatabaseResources;
 
 

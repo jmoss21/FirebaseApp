@@ -15,6 +15,10 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+
+/**
+ *
+ */
 public class MyAccountActivity extends AppCompatActivity implements  OnClickListener
 
 {

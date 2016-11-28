@@ -6,7 +6,8 @@ import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 
 /**
- * Created by asohm on 11/22/2016.
+ * This contain all method for requesting system permision to access
+ * a hardware resource.
  */
 
 public class SystemPermission {

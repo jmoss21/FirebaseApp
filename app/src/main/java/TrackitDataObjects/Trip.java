@@ -1,7 +1,10 @@
 package TrackitDataObjects;
 
 /**
- * Created by asohm on 11/21/2016.
+ * The Trip Class is designed to hold all the information for a trip and be the object that
+ * the MapActivity interface updates in order to keep track of a Driver initiated trip.
+ * Additionally, it can be used to contain the data about a previously recorded trip.
+
  */
 
 public class Trip

@@ -7,6 +7,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
 
+/**
+ * This Activity will be responsible for collecting the vehicle's vin and odometer
+ * before the the app can begin tracking vehicles movement.
+ */
 public class TripInfoActivity extends AppCompatActivity implements View.OnClickListener{
 
     //references to the layout views
