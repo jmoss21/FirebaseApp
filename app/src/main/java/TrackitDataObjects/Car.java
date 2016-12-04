@@ -7,12 +7,11 @@ package TrackitDataObjects;
 
 public class Car {
 
-    private String odometer;
+    private double odometer;
     private String vinNumber;
     private String make;
     private String model;
     private String year;
-    private String tag;
 
 
 
@@ -22,14 +21,13 @@ public class Car {
      */
     public  Car()
     {
-        vinNumber = null;
-        odometer = null;
+
     }
 
     /***************************************************************
     * CLASS GETTER AND SETTER METHODS
     */
-    public void setOdometer(String odometer) {
+    public void setOdometer(double odometer) {
         this.odometer = odometer;
     }
 
@@ -37,7 +35,7 @@ public class Car {
         this.vinNumber = vinNumber;
     }
 
-    public String getOdometer() {
+    public double getOdometer() {
         return odometer;
     }
 
@@ -69,12 +67,12 @@ public class Car {
         this.year = year;
     }
 
-    public String getTag() {
-        return tag;
-    }
 
-    public void setTag(String tag) {
-        this.tag = tag;
-    }
     /*******END OF GETTTERS AND SETTERS********/
+
+    @Override
+    public String toString()
+    {
+        return "Make:"+make+" | Model: "+model+ " Vin: "+ vinNumber + " | Year: "+year+"";
+    }//toString ends
 }

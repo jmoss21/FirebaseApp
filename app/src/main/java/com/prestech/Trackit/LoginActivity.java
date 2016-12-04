@@ -15,6 +15,13 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import TrackitDataObjects.Driver;
 
 /**
  *The LoginActivity is designed to authenticate the user of application to the company's backend database.
@@ -36,6 +43,8 @@ public class LoginActivity extends Activity implements View.OnClickListener{
     private String email ;
     private String password;
 
+
+
     //log tag
     private String TAG = "SIGN_IN_ERROR";
 
@@ -44,6 +53,19 @@ public class LoginActivity extends Activity implements View.OnClickListener{
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
 
+    //database references
+    private static DatabaseReference mDatabase;
+
+    //
+    private static Driver loggedInDriver;
+
+
+    //reference to intent that will hold user's information
+    public final static  String LAST_NAME = "LAST_NAME";
+    public final static  String FIRST_NAME = "FIRST_NAME";
+    public final static  String EMAIL = "ENAIL";
+    public final static  String PASSWORD = "PASSWORD";
+    public final static  String PHONE_NUMBER = "PHONE";
 
 
     /*********************************************************************
@@ -83,8 +105,12 @@ public class LoginActivity extends Activity implements View.OnClickListener{
                 //check if the user object contains user information
                 if(user != null)
                 {
-                    //user is signed in
-                    Log.w(TAG, "User is signed in");
+                    //getRerence to user's information from the database
+                    mDatabase = FirebaseDatabase.getInstance().getReference("drivers/" + user.getUid());
+
+                    //register the database reference with an even listener
+                    mDatabase.addValueEventListener(dataValueEventListener);
+
 
                 }//if ends
                 else
@@ -151,7 +177,6 @@ public class LoginActivity extends Activity implements View.OnClickListener{
                     infoTextView.setText("");
 
                     signIn(email, password);
-                    //startActivity(new Intent(LoginActivity.this, MainTabActivity.class));
 
                 }else{
                     infoTextView.setText("Email/Username and Password must be entered");
@@ -170,6 +195,7 @@ public class LoginActivity extends Activity implements View.OnClickListener{
     {
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
+
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (!task.isSuccessful()) {
@@ -178,11 +204,50 @@ public class LoginActivity extends Activity implements View.OnClickListener{
                         }
                         else
                         {
-                            startActivity(new Intent(LoginActivity.this, MainTabActivity.class));
+                            Intent mainActivityIntent = new Intent(LoginActivity.this, MainTabActivity.class);
+                            mainActivityIntent.putExtra(EMAIL, loggedInDriver.getEmail());
+                            mainActivityIntent.putExtra(LAST_NAME, loggedInDriver.getLastName());
+                            mainActivityIntent.putExtra(FIRST_NAME, loggedInDriver.getFirstName());
+                            mainActivityIntent.putExtra(PHONE_NUMBER, loggedInDriver.getPhoneNumber());
+                            mainActivityIntent.putExtra(PASSWORD, loggedInDriver.getPassword());
+
+                            startActivity(mainActivityIntent);
                         }
                     }
                 });
     }//signIn(String email, String password) Ends
+
+
+
+
+
+    /************************************************************
+     */
+
+     ValueEventListener dataValueEventListener = new ValueEventListener() {
+         @Override
+         public void onDataChange(DataSnapshot dataSnapshot) {
+
+         //create a Driver Object
+         loggedInDriver = new Driver();
+
+        //make sure loggedInDriver object is not null
+        if(loggedInDriver != null && dataSnapshot != null){
+             //set the Driver attributes
+            loggedInDriver.setFirstName(dataSnapshot.child("firstName").getValue().toString());
+            loggedInDriver.setLastName(dataSnapshot.child("lastName").getValue().toString());
+            loggedInDriver.setEmail(dataSnapshot.child("email").getValue().toString());
+            loggedInDriver.setPhoneNumber(dataSnapshot.child("phoneNumber").getValue().toString());
+         }//if ends
+
+    }//onDataChange()
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };//dataValueEventListener Ends
+
 
 
 }//LoginActivty Class Ends

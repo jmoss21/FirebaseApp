@@ -7,12 +7,18 @@ package TrackitDataObjects;
 
 public class Driver
 {
-    private  String username, driverId, email;
+
+    private String email;
+    private String password;
+    private String FirstName;
+    private String LastName;
+    private String phoneNumber;
+
 
     /******************************************************
       NO Argument constructor
      */
-    Driver()
+    public Driver()
     {
 
     }//driver() Ends
@@ -21,9 +27,8 @@ public class Driver
     /*******************************************************
      Constructor with parameters
      */
-    public Driver (String username, String email) {
-        this.username = username;
-        this.email = email;
+    public Driver (String firstName, String lastName, String phoneNumber, String email)
+    {
     }//Driver(String, String) Ends
 
 
@@ -31,20 +36,30 @@ public class Driver
      * Class Getter and Setter methods
      * @return
      */
-    public String getDriverId() {
-        return driverId;
+
+
+    public String getPassword() {
+        return password;
     }
 
-    public void setUserId(String driverId) {
-        this.driverId = driverId;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
-    public String getName() {
-        return username;
+    public String getLastName() {
+        return LastName;
     }
 
-    public void setName(String name) {
-        this.username = name;
+    public void setLastName(String lastName) {
+        LastName = lastName;
+    }
+
+    public String getFirstName() {
+        return FirstName;
+    }
+
+    public void setFirstName(String firstName) {
+        FirstName = firstName;
     }
 
     public String getEmail() {
@@ -54,6 +69,15 @@ public class Driver
     public void setEmail(String email) {
         this.email = email;
     }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
     /************END OF GETTERS AND SETTERS***************/
 
 

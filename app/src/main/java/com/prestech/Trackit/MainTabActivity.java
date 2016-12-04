@@ -21,6 +21,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -36,6 +37,9 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+
+
+import TrackitDataObjects.Driver;
 
 
 /**
@@ -59,14 +63,17 @@ public class MainTabActivity extends AppCompatActivity
     private SectionsPagerAdapter mSectionsPagerAdapter;
 
 
+    //database references
     private static FirebaseUser firebaseUser;
-    private DatabaseReference mDatabase;
+    private static DatabaseReference mDatabase;
+
 
     /**
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
 
+    private static Intent mLoginIntent;
 
     /******************************************************************************************
      * This is an Activty call back method when the activity and its views are being created
@@ -79,20 +86,21 @@ public class MainTabActivity extends AppCompatActivity
         setContentView(R.layout.activity_main_tab);
 
 
+        mLoginIntent = getIntent();
+
         //initialize firebaseAuth and firebaseUser
         firebaseUser = getFirebaseUser();
+
 
         //open the login activity if user is null
         if(firebaseUser == null)
         {
+            //open the login activity
             startActivity(new Intent(MainTabActivity.this, LoginActivity.class));
 
-        }//if ends
+        }
 
 
-
-        //register the database reference with an even listener
-       // mDatabase.addChildEventListener(databaseValueEventListener);
 
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -109,20 +117,22 @@ public class MainTabActivity extends AppCompatActivity
         tabLayout.setupWithViewPager(mViewPager);
 
 
+
     }//onCreate() Ens
 
 
-    /**
+    /*******************************************************
      *
      * @param auth
      */
     public static void setFirebaseUser(FirebaseAuth auth)
     {
         firebaseUser = auth.getCurrentUser();
-    }//setUserAuthentication Ends()
+
+    }//setUserAuthentication() Ends
 
 
-    /**
+    /******************************************************
      *
      * @return
      */
@@ -130,6 +140,9 @@ public class MainTabActivity extends AppCompatActivity
     {
         return firebaseUser;
     }//getUserAuthentication Ends()
+
+
+
 
 
 
@@ -165,6 +178,11 @@ public class MainTabActivity extends AppCompatActivity
         {
             return true;
         }
+        else  if (id == R.id.action_logout)
+        {
+            FirebaseAuth.getInstance().signOut();
+            startActivity(new Intent(MainTabActivity.this, LoginActivity.class));
+        }
 
         return super.onOptionsItemSelected(item);
     }//onOptionsItemSelected() Ends
@@ -184,17 +202,36 @@ public class MainTabActivity extends AppCompatActivity
          * The fragment argument representing the section number for this
          * fragment.
          */
-        private static final String ARG_SECTION_NUMBER = "section_number";
+        private static final String FRAGMENT_RESOURCE_ID = "section_number";
 
 
-        RecyclerView mRecyclerView;
+
+        /***** Reference objects used in the "PAST TRIP" tap***/
+
+        //reference to recycle view
+        private RecyclerView mRecyclerView;
+        //recycleView's adapter
         private RecyclerView.Adapter mAdapter;
-        LinearLayoutManager llm;
-
+        //layoutManager for recyclview
+        private LinearLayoutManager llm;
+        //holds PAST TRIP data
         private ArrayList<String> mDatabaseResource;
 
-        //reference to HOME PAGE view
+        /******reference to HOME PAGE tab*****/
+
+        //reference to "New Trip" Button
         private Button newTripBtn;
+        private String welcomeMessage;
+        private TextView welcomeTextView;
+
+
+        /*****Refernce to "MY ACCOUNT" tab******/
+
+        private EditText firstNameEditView;
+        private EditText lastNameEditView;
+        private EditText emailEditView;
+        private EditText passwordEditView;
+        private EditText phoneNumberEditView;
 
 
         /**************************************************
@@ -213,10 +250,10 @@ public class MainTabActivity extends AppCompatActivity
         {
             PlaceholderFragment fragment = new PlaceholderFragment();
             Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
+            args.putInt(FRAGMENT_RESOURCE_ID, sectionNumber);
             fragment.setArguments(args);
             return fragment;
-        }
+        }//newInstance(int) Ends
 
 
 
@@ -227,7 +264,6 @@ public class MainTabActivity extends AppCompatActivity
          * @param savedInstanceState
          * @return
          */
-
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState)
@@ -244,37 +280,65 @@ public class MainTabActivity extends AppCompatActivity
             mDatabaseResource.add("seventh Trip");
 
 
-            View rootView = inflater.inflate(getArguments().getInt(ARG_SECTION_NUMBER), container, false);
+            View rootView = inflater.inflate(getArguments().getInt(FRAGMENT_RESOURCE_ID), container, false);
 
-            //initialize homepage views
+
+
+            /*******************Initialize "PAST TRIP" TAB views******************************/
+
+            //initialize the RecycleView
+            mRecyclerView = (RecyclerView)rootView.findViewById(R.id.past_trip_recycler);
+
+            //set up the recycle View's layout and content in the 'PAST TRIP' tab
+            setupRecycleViewEnvironment();
+
+
+            /*******************initialize "HOME" TAB views**************************/
             newTripBtn =  (Button)rootView.findViewById(R.id.home_new_trip_btn);
 
+            welcomeTextView = (TextView)rootView.findViewById(R.id.welcome_textview);
+
+            if(welcomeTextView!=null)
+            {
+                welcomeMessage = "Welcome \n To \n Trackit \n "+ mLoginIntent.getStringExtra(LoginActivity.LAST_NAME) + "!";
+
+                welcomeTextView.setText(welcomeMessage);
+            }
+
+            //if button is not null
             if(newTripBtn != null)
             {
+                //set its onClickListener
                 newTripBtn.setOnClickListener(this);
             }//if ends
 
-            mRecyclerView = (RecyclerView)rootView.findViewById(R.id.past_trip_recycler);
-
-
-            if(mRecyclerView != null)
-            {
-                llm = new LinearLayoutManager(getContext());
-                mRecyclerView.setHasFixedSize(true);
-                mAdapter = new MyRecyclerAdapter(mDatabaseResource);
-                mRecyclerView.setLayoutManager(llm);
-                mRecyclerView.setAdapter(mAdapter);
-
-            }
 
 
 
-            //TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-           // textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
 
+            /**********************Initialize "MY ACCOUNT" TAB views********************/
+            firstNameEditView = (EditText) rootView.findViewById(R.id.first_name_field);
+            lastNameEditView = (EditText)rootView.findViewById(R.id.last_name_field);
+            emailEditView = (EditText)rootView.findViewById(R.id.email_field);
+            phoneNumberEditView = (EditText) rootView.findViewById(R.id.phone_field);
+            passwordEditView = (EditText)rootView.findViewById(R.id.passsd_field);
+
+
+
+            populateUserAccountInfo(mLoginIntent);
+
+
+            //return the rootView
             return rootView;
+
         }//onCreateViews() Ends
 
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
+
+            //mLoginIntent = null;
+        }
 
         /***********************************************************************************
         *This method is the implementation of the OnClickListener; it register the views to
@@ -291,6 +355,74 @@ public class MainTabActivity extends AppCompatActivity
                     break;
             }//switch ends
         }//onClick ends
+
+
+        /**
+         *
+         */
+         private void setupRecycleViewEnvironment()
+         {
+             //check if the RecycleView object is available.
+             if(mRecyclerView != null)
+             {
+                 //create a layoutManager
+                 llm = new LinearLayoutManager(getContext());
+
+                 //create an adapter object
+                 mAdapter = new MyRecyclerAdapter(mDatabaseResource);
+
+                 //set
+                 mRecyclerView.setHasFixedSize(true);
+                 mRecyclerView.setLayoutManager(llm);
+                 mRecyclerView.setAdapter(mAdapter);
+
+             }//if ends
+         }//setupRecycleViewEnvironment() Ends
+
+
+        /**
+         *
+         */
+        private  void populateUserAccountInfo(Intent mLoginIntent)
+        {
+            if(mLoginIntent != null)
+            {
+
+                if(firstNameEditView != null )
+                {
+                    firstNameEditView.setEnabled(false);
+                    firstNameEditView.setText(mLoginIntent.getStringExtra(LoginActivity.FIRST_NAME));
+                }
+
+                if(lastNameEditView != null )
+                {
+                    lastNameEditView.setEnabled(false);
+                    lastNameEditView.setText(mLoginIntent.getStringExtra(LoginActivity.LAST_NAME));
+                }
+
+                if(passwordEditView != null )
+                {
+                    passwordEditView.setEnabled(false);
+
+                }
+                if(emailEditView != null )
+                {
+                    emailEditView.setEnabled(false);
+                    emailEditView.setText(mLoginIntent.getStringExtra(LoginActivity.EMAIL));
+                }
+
+                if(phoneNumberEditView != null )
+                {
+                    phoneNumberEditView.setEnabled(false);
+                    phoneNumberEditView.setText(mLoginIntent.getStringExtra(LoginActivity.PHONE_NUMBER));
+
+                }
+            }//populateUserAccountInfo()
+
+
+        }//populateUserAccountInfo
+
+
 
 
     }//PlaceholderFragment Class Ends
@@ -474,6 +606,7 @@ class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.MyViewHol
          }//ViewHolder constructor ends
 
      }//ViewHolder Ends
+
 
  }//MyRecycler Adapter Ends
 

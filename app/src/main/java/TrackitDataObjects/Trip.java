@@ -1,5 +1,8 @@
 package TrackitDataObjects;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * The Trip Class is designed to hold all the information for a trip and be the object that
  * the MapActivity interface updates in order to keep track of a Driver initiated trip.
@@ -13,25 +16,25 @@ public class Trip
     /*
     Trip's attributes
      */
-    private String tripId;
     private String startTime;
     private String endTime;
-    private String distance;
+    private double distance;
     private String totalTime;
-    private String startOdometer;
-    private String endOdometer;
 
 
     /***********************************************
      *Class GETTERS and SETTERS
      */
-    public String getTripId()
+    public Trip()
     {
-        return tripId;
+
     }
 
-    public void setTripId(String tripId) {
-        this.tripId = tripId;
+    public Trip(String startTime, double distance, String totalTime)
+    {
+        this.startTime = startTime;
+        this.distance = 0;
+        this.totalTime = totalTime;
     }
 
     public String getStartTime() {
@@ -50,28 +53,12 @@ public class Trip
         this.endTime = endTime;
     }
 
-    public String getDistance() {
+    public double getDistance() {
         return distance;
     }
 
-    public void setDistance(String distance) {
+    public void setDistance(double distance) {
         this.distance = distance;
-    }
-
-    public String getEndOdometer() {
-        return endOdometer;
-    }
-
-    public void setEndOdometer(String endOdometer) {
-        this.endOdometer = endOdometer;
-    }
-
-    public String getStartOdometer() {
-        return startOdometer;
-    }
-
-    public void setStartOdometer(String startOdometer) {
-        this.startOdometer = startOdometer;
     }
 
     public String getTotalTime() {
@@ -83,4 +70,6 @@ public class Trip
     }
 
     /**********END of GEETERS AND SETTERS*******************     */
+
+
 }

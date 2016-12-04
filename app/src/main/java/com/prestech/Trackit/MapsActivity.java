@@ -1,12 +1,15 @@
 package com.prestech.Trackit;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.test.suitebuilder.TestMethod;
+import android.util.Log;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -29,6 +32,15 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.maps.android.SphericalUtil;
+
+
+import TrackitDataObjects.Trip;
 
 /**
  *The MapActivity  is designed to display to the user the trip that is currently being
@@ -45,16 +57,37 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     //reference to the map object
     private GoogleMap mMap;
 
+
+    /***References to GoogleApi's***/
     private GoogleApiClient mGoogleApiClient;
     private Location mCurrentLocation;
     private Location mLastKnownLocation;
+    private Location mStartingLocation;
     private LocationRequest mLocationRequest;
 
 
+    /**References to activity's views*/
     private TextView cordTextView;
+    private TextView distanceTimeTextView;
+    private TextView carInfoTextView;
 
-    PolylineOptions polylineOptions;
+    /*Polyline setup references */
+    private PolylineOptions polylineOptions;
     private Polyline polyline;
+
+    /*Reference to Firebase database*/
+    private DatabaseReference dbRefeerence;
+
+    private Intent mInent;
+
+    private Bundle mBundle;
+
+    private double mOdometer;
+    private double milesTravelled;
+    private String timeTravelled;
+
+    //stores Trip's id
+    private String tripId;
 
     /*************************************************************
      * Activity's onCreate() call back method
@@ -64,6 +97,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
+        //get the activity's intent
+        mInent = getIntent();
+        mBundle = mInent.getBundleExtra(TripInfoActivity.BUNDLE_DATA);
+
+
+        //Get reference instance of the database
+        dbRefeerence = createNewTrip();
+
+        milesTravelled = 0;
+        timeTravelled = "00:00:00";
 
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -72,7 +115,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
 
         cordTextView = (TextView)findViewById(R.id.cord_display);
+        carInfoTextView = (TextView)findViewById(R.id.car_info_textview);
+        distanceTimeTextView = (TextView)findViewById(R.id.dist_time_textview);
 
+        if(carInfoTextView != null)
+        {
+            carInfoTextView.setText(mBundle.get(TripInfoActivity.CAR_INFO).toString().toUpperCase());
+        }
+        if(distanceTimeTextView != null)
+        {
+            distanceTimeTextView.setText("Miles: "+ milesTravelled+ " | Time: "+ timeTravelled);
+        }
         //set up the google Api
          setUpGoogleApi();
 
@@ -82,19 +135,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //validate location settings
         validateLocationSettings();
 
-
     }//onCreate() Ends
 
 
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
+    /*************************************************************
+     *
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -116,13 +162,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //check if Location permission has been granted
         mMap.setMyLocationEnabled(true);
 
-        mLastKnownLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        mStartingLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
-        if(mLastKnownLocation != null)
+
+        if(mStartingLocation != null)
         {
-            updateTextView(mLastKnownLocation);
-            updateCameraPosition(mCurrentLocation);
-        }
+            updateTextView(mStartingLocation);
+            updateCameraPosition(mStartingLocation);
+        }//if ends
+
 
     }//onMapReady() Ends
 
@@ -166,9 +214,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 && ActivityCompat.checkSelfPermission
                 (this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
 
-
-
-            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+                LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
 
     }//onConnected() Ends
 
@@ -208,7 +254,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //draw the path
         tracePath(this.mCurrentLocation);
-    }//onLocationChanged
+
+
+        //update distance
+        if(mStartingLocation != null)
+        {
+            Log.i("mDISTANCE", mStartingLocation.toString()+"");
+
+            updateDistance(mStartingLocation, mCurrentLocation);
+
+        }//if Ends
+
+
+    }//onLocationChanged() Ends
 
 
 
@@ -281,15 +339,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         this.polylineOptions.add(new LatLng(mCurrentLat, mCurrentLng));
         this.polyline = mMap.addPolyline(this.polylineOptions);
 
-    }
-
-    /**********************************************************************
-     * This method computes the number of miles coverred by the trip
-     */
-    private void computeMiles()
-    {
-
-    }
+    }//tracePath() Ends
 
 
     /**********************************************************************
@@ -352,4 +402,58 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }//setUpLocationSettingsApi() Ends
 
 
-}
+    /*******************************************************************
+     *
+     */
+     ValueEventListener dbValueEventListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }//onCancelled() Ends
+    };//ValueEventListener Ends
+
+
+    /**********************************************************************
+     * This method creates a new trip data entity and add it to the database
+     *
+     */
+     private DatabaseReference createNewTrip()
+     {
+         Trip trip = new Trip("now", 9 , "total");
+         tripId = FirebaseDatabase.getInstance().getReference("trips").push().getKey();
+
+         DatabaseReference dbRefeerence = FirebaseDatabase.getInstance().getReference("trips");
+
+         dbRefeerence.child(tripId).setValue(trip);
+
+         return FirebaseDatabase.getInstance().getReference("trips/"+tripId);
+     }//createNewTrip() Ends
+
+
+    /****************************************************
+     *
+     */
+    private void updateDatabase()
+    {
+
+    }//updateDatabase() Ends
+
+    private void updateDistance(Location mStartingPoint, Location mCurrentPoint)
+    {
+        LatLng mStartingLatLng = new LatLng(mStartingPoint.getLatitude(), mStartingPoint.getLongitude());
+        LatLng mCurrentLatLng = new LatLng(mCurrentPoint.getLatitude(), mCurrentPoint.getLongitude());
+
+        milesTravelled = SphericalUtil.computeDistanceBetween(mStartingLatLng, mCurrentLatLng);
+
+        distanceTimeTextView.setText("Miles: "+ milesTravelled+ " | Time: "+ timeTravelled);
+
+    }//updateDistance() Ends
+
+
+
+}//MapsActivity Ends
